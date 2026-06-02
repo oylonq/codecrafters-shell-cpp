@@ -14,6 +14,9 @@ int main() {
     std::getline(std::cin, input);
 
     // Eval: Parse and execute the command
+    if (input == "exit") {
+      return 0;
+    }
 
     // Print: Display the output or error message
     std::cout << input << ": command not found" << '\n';
