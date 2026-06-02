@@ -1,11 +1,14 @@
 #include <iostream>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 struct Command {
   std::string cmd;
   std::vector<std::string> args;
 };
+
+std::unordered_set<std::string> builtin{"echo", "exit", "type"};
 
 Command parseInput(std::string &input);
 std::string trimString(std::string &input);
@@ -30,10 +33,21 @@ int main() {
       return 0;
 
     } else if (cmd == "echo") {
+
       if (!args.empty()) {
         std::cout << args[0] << '\n';
       } else {
         std::cout << '\n';
+      }
+
+    } else if (cmd == "type") {
+
+      if (!args.empty()) {
+        if (builtin.find(args[0]) != builtin.end()) {
+          std::cout << args[0] << " is a shell builtin" << '\n';
+        } else {
+          std::cout << args[0] << ": not found" << '\n';
+        }
       }
 
     } else {
