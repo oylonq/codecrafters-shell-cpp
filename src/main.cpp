@@ -8,7 +8,6 @@ struct Command {
 };
 
 Command parseInput(std::string &input);
-
 std::string trimString(std::string &input);
 
 int main() {
@@ -24,15 +23,18 @@ int main() {
     std::getline(std::cin, input);
 
     // Eval: Parse and execute the command
-    const auto &[cmd, args] = parseInput(input);
+    auto [cmd, args] = parseInput(input);
 
     if (cmd == "exit") {
 
       return 0;
 
     } else if (cmd == "echo") {
-
-      std::cout << args[0] << '\n';
+      if (!args.empty()) {
+        std::cout << args[0] << '\n';
+      } else {
+        std::cout << '\n';
+      }
 
     } else {
       // Print: Display the output or error message
@@ -57,7 +59,7 @@ Command parseInput(std::string &input) {
   }
 
   int pos = 0;
-  while (trimed_input[pos] != ' ' && pos < n) {
+  while (pos < n && trimed_input[pos] != ' ') {
     pos++;
   }
 
@@ -74,13 +76,11 @@ std::string trimString(std::string &input) {
   int left = 0;
   int right = input.size() - 1;
 
-  while (left <= right) {
-    while (left <= right && input[left] == ' ') {
-      left++;
-    }
-    while (left <= right && input[right] == ' ') {
-      right--;
-    }
+  while (left <= right && input[left] == ' ') {
+    left++;
+  }
+  while (left <= right && input[right] == ' ') {
+    right--;
   }
 
   return input.substr(left, right - left + 1);
