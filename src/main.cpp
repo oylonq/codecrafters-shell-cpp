@@ -24,7 +24,7 @@ int main() {
     std::getline(std::cin, input);
 
     // Eval: Parse and execute the command
-    auto [cmd, args] = parseInput(input);
+    const auto &[cmd, args] = parseInput(input);
 
     if (cmd == "exit") {
 
@@ -36,7 +36,7 @@ int main() {
 
     } else {
       // Print: Display the output or error message
-      std::cout << input << ": command not found" << '\n';
+      std::cout << cmd << ": command not found" << '\n';
     }
 
   } // Loop: Return to step 1 and wait for the next command
@@ -44,7 +44,7 @@ int main() {
   return 0;
 }
 
-Command parseInput(std::string input) {
+Command parseInput(std::string &input) {
   Command res;
 
   // Trim input
