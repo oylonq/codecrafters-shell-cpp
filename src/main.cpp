@@ -48,11 +48,12 @@ int main() {
       if (!args.empty()) {
         if (builtin.find(args[0]) != builtin.end()) {
           std::cout << args[0] << " is a shell builtin" << '\n';
+
         } else { // cmd is not a builtin
           // Get PATH
           std::string PATH{getenv("PATH")};
           std::vector<std::string> PATHs = splitStr(PATH, ':');
-          bool is_exec;
+          bool is_exec = false;
 
           for (std::string path : PATHs) {
             if (std::filesystem::exists(path + "/" + args[0])) {
