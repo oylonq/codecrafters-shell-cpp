@@ -1,3 +1,5 @@
+#include <cstdlib>
+#include <filesystem>
 #include <iostream>
 #include <string>
 #include <unordered_set>
@@ -12,6 +14,7 @@ std::unordered_set<std::string> builtin{"echo", "exit", "type"};
 
 Command parseInput(std::string &input);
 std::string trimString(std::string &input);
+std::vector<std::string> splitStr(std::string s, char symbol);
 
 int main() {
   // Flush after every std::cout / std:cerr
@@ -45,8 +48,25 @@ int main() {
       if (!args.empty()) {
         if (builtin.find(args[0]) != builtin.end()) {
           std::cout << args[0] << " is a shell builtin" << '\n';
-        } else {
-          std::cout << args[0] << ": not found" << '\n';
+        } else { // cmd is not a builtin
+          // Get PATH
+          std::string PATH{getenv("PATH")};
+          std::vector<std::string> PATHs = splitStr(PATH, ':');
+
+          for (std::string path : PATHs) {
+            if (std::filesystem::exists(path + "/" + args[0])) {
+              std::filesystem::perms p =
+                  std::filesystem::status(path + "/" + args[0]).permissions();
+              bool is_owner_exec = std::filesystem::perms::none !=
+
+                                   (std::filesystem::perms::owner_exec & p);
+              if (is_owner_exec) {
+                std::cout << args[0] << " is " + path + "/" + args[0] << '\n';
+                break;
+              }
+            }
+          }
+          std::cout << args[0] << ": command not found" << '\n';
         }
       }
 
@@ -98,4 +118,17 @@ std::string trimString(std::string &input) {
   }
 
   return input.substr(left, right - left + 1);
+}
+std::vector<std::string> splitStr(std::string s, char symbol) {
+  std::vector<std::string> res;
+
+  int start = 0;
+  for (int end = 0; end < s.size(); ++end) {
+    if (s[end] == symbol) {
+      res.push_back(s.substr(start, end - start));
+      start = end + 1;
+    }
+  }
+
+  return res;
 }
