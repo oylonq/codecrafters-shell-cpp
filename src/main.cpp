@@ -52,21 +52,26 @@ int main() {
           // Get PATH
           std::string PATH{getenv("PATH")};
           std::vector<std::string> PATHs = splitStr(PATH, ':');
+          bool is_exec;
 
           for (std::string path : PATHs) {
             if (std::filesystem::exists(path + "/" + args[0])) {
               std::filesystem::perms p =
                   std::filesystem::status(path + "/" + args[0]).permissions();
-              bool is_owner_exec = std::filesystem::perms::none !=
+              is_exec = std::filesystem::perms::none !=
 
-                                   (std::filesystem::perms::owner_exec & p);
-              if (is_owner_exec) {
+                        ((std::filesystem::perms::owner_exec |
+                          std::filesystem ::perms ::group_exec |
+                          std::filesystem::perms::others_exec) &
+                         p);
+              if (is_exec) {
                 std::cout << args[0] << " is " + path + "/" + args[0] << '\n';
                 break;
               }
             }
           }
-          std::cout << args[0] << ": command not found" << '\n';
+          if (!is_exec)
+            std::cout << args[0] << ": command not found" << '\n';
         }
       }
 
