@@ -72,7 +72,7 @@ int main() {
             }
           }
           if (!is_exec)
-            std::cout << args[0] << ": command not found" << '\n';
+            std::cout << args[0] << ": not found" << '\n';
         }
       }
 
