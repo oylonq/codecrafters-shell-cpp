@@ -125,6 +125,7 @@ std::string trimString(std::string &input) {
 
   return input.substr(left, right - left + 1);
 }
+
 std::vector<std::string> splitStr(std::string s, char symbol) {
   std::vector<std::string> res;
 
