@@ -152,25 +152,31 @@ Command parseInput(std::string &input) {
 
   // Trim input
   std::string trimed_input = trimString(input);
-
-  // Find first delimit
-  int n = trimed_input.size();
-  if (n == 0) {
-    return res;
+  std::vector<std::string> vec = splitStr(trimed_input, ' ');
+  res.cmd = vec[0];
+  for (int i = 1; i < vec.size(); ++i) {
+    res.args.push_back(vec[i]);
   }
-
-  int pos = 0;
-  while (pos < n && trimed_input[pos] != ' ') {
-    pos++;
-  }
-
-  res.cmd = trimed_input.substr(0, pos - 0);
-  if (pos == n) {
-    return res;
-  }
-
-  res.args.push_back(trimed_input.substr(pos + 1, n - pos - 1));
   return res;
+
+  // // Find first delimit
+  // int n = trimed_input.size();
+  // if (n == 0) {
+  //   return res;
+  // }
+  //
+  // int pos = 0;
+  // while (pos < n && trimed_input[pos] != ' ') {
+  //   pos++;
+  // }
+  //
+  // res.cmd = trimed_input.substr(0, pos - 0);
+  // if (pos == n) {
+  //   return res;
+  // }
+  //
+  // res.args.push_back(trimed_input.substr(pos + 1, n - pos - 1));
+  // return res;
 }
 
 std::string trimString(std::string &input) {
