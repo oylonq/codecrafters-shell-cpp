@@ -44,7 +44,10 @@ int main() {
     } else if (cmd == "echo") {
 
       if (!args.empty()) {
-        std::cout << args[0] << '\n';
+        for (int i = 0; i < args.size() - 2; ++i) {
+          std::cout << args[i] << ' ';
+        }
+        std::cout << args.back() << '\n';
       } else {
         std::cout << '\n';
       }
