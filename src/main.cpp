@@ -28,6 +28,7 @@ int main() {
 
   while (true) {
     // Read: Display a prompt and wait for user input
+    pid_t pid;
     std::cout << "$ ";
 
     std::string input;
@@ -86,7 +87,7 @@ int main() {
       std::string cmd_path;
       if (getPath(cmd, cmd_path)) {
         // if it is, execute the program
-        pid_t pid = fork();
+        pid = fork();
         if (pid == 1) {
           std::perror("Fork failed");
           return 1;
@@ -112,6 +113,8 @@ int main() {
       }
     }
 
+    int status;
+    waitpid(pid, &status, 0);
   } // Loop: Return to step 1 and wait for the next command
 
   return 0;
