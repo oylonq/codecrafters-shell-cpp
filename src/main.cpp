@@ -85,6 +85,10 @@ int main() {
         }
       }
 
+    } else if (cmd == "pwd") {
+      std::filesystem::path cwd = std::filesystem::current_path();
+      std::cout << cmd << '\n';
+
     } else {
       // Determine if the give command is an executable
       std::string cmd_path;
@@ -177,7 +181,7 @@ std::string trimString(std::string &input) {
   return input.substr(left, right - left + 1);
 }
 
-std::vector<std::string> splitStr(std::string s, char symbol) {
+std::vector<std::string> splitStr(std::string &s, char symbol) {
   std::vector<std::string> res;
   int n = s.size();
 
