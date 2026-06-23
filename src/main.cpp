@@ -161,25 +161,6 @@ Command parseInput(std::string &input) {
     res.args.push_back(vec[i]);
   }
   return res;
-
-  // // Find first delimit
-  // int n = trimed_input.size();
-  // if (n == 0) {
-  //   return res;
-  // }
-  //
-  // int pos = 0;
-  // while (pos < n && trimed_input[pos] != ' ') {
-  //   pos++;
-  // }
-  //
-  // res.cmd = trimed_input.substr(0, pos - 0);
-  // if (pos == n) {
-  //   return res;
-  // }
-  //
-  // res.args.push_back(trimed_input.substr(pos + 1, n - pos - 1));
-  // return res;
 }
 
 std::string trimString(std::string &input) {
@@ -206,9 +187,9 @@ std::vector<std::string> splitStr(std::string s, char symbol) {
       res.push_back(s.substr(start, end - start));
       start = end + 1;
     }
-    if (end == n - 1) {
-      res.push_back(s.substr(start, end - start + 1));
-    }
+  }
+  if (start != n) {
+    res.push_back(s.substr(start, n - start));
   }
 
   return res;
