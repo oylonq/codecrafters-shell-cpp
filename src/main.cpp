@@ -87,7 +87,7 @@ int main() {
 
     } else if (cmd == "pwd") {
       std::filesystem::path cwd = std::filesystem::current_path();
-      std::cout << cwd << '\n';
+      std::cout << std::string(cwd) << '\n';
 
     } else {
       // Determine if the give command is an executable
