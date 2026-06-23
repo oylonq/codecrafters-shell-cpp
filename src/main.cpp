@@ -44,7 +44,7 @@ int main() {
     } else if (cmd == "echo") {
 
       if (!args.empty()) {
-        for (int i = 0; i < args.size() - 2; ++i) {
+        for (int i = 0; i < args.size() - 1; ++i) {
           std::cout << args[i] << ' ';
         }
         std::cout << args.back() << '\n';
