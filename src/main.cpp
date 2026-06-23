@@ -18,7 +18,7 @@ std::unordered_set<std::string> builtin{"echo", "exit", "type"};
 
 Command parseInput(std::string &input);
 std::string trimString(std::string &input);
-std::vector<std::string> splitStr(std::string s, char symbol);
+std::vector<std::string> splitStr(std::string &s, char symbol);
 bool getPath(std::string &command, std::string &cmd_path);
 
 int main() {
