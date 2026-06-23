@@ -2,7 +2,11 @@
 #include <filesystem>
 #include <iostream>
 #include <string>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include <unordered_set>
+
 #include <vector>
 
 struct Command {
@@ -15,6 +19,7 @@ std::unordered_set<std::string> builtin{"echo", "exit", "type"};
 Command parseInput(std::string &input);
 std::string trimString(std::string &input);
 std::vector<std::string> splitStr(std::string s, char symbol);
+bool getPath(std::string &command, std::string &cmd_path);
 
 int main() {
   // Flush after every std::cout / std:cerr
@@ -77,6 +82,29 @@ int main() {
       }
 
     } else {
+      // Determine if the give command is an executable
+      std::string cmd_path;
+      if (getPath(cmd, cmd_path)) {
+        // if it is, execute the program
+        pid_t pid = fork();
+        if (pid == 1) {
+          std::perror("Fork failed");
+          return 1;
+        } else if (pid == 0) {
+          // Inside child process
+          char *sub_args[args.size() + 2];
+          sub_args[0] = const_cast<char *>(cmd.c_str());
+          for (int i = 0; i < args.size(); ++i) {
+            sub_args[i + 1] = const_cast<char *>(args[i].c_str());
+          }
+          sub_args[args.size() + 1] = nullptr;
+
+          execv(cmd_path.c_str(), sub_args);
+        }
+      }
+
+      // pass any arguments from the command line to the program
+
       // Print: Display the output or error message
       std::cout << cmd << ": command not found" << '\n';
     }
@@ -84,6 +112,33 @@ int main() {
   } // Loop: Return to step 1 and wait for the next command
 
   return 0;
+}
+
+bool getPath(std::string &command, std::string &cmd_path) {
+  std::string PATH{getenv("PATH")};
+  std::vector<std::string> PATHS = splitStr(PATH, ':');
+
+  for (std::string path : PATHS) {
+    std::string full_path = path + "/" + command;
+
+    if (std::filesystem::exists(full_path)) {
+
+      std::filesystem::perms p =
+          std::filesystem::status(full_path).permissions();
+
+      if (std::filesystem::perms::none !=
+          ((std::filesystem::perms::owner_exec |
+            std::filesystem ::perms ::group_exec |
+            std::filesystem::perms::others_exec) &
+           p)) {
+        cmd_path = full_path;
+        return true;
+      }
+    }
+  }
+
+  cmd_path = "";
+  return false;
 }
 
 Command parseInput(std::string &input) {
