@@ -14,7 +14,7 @@ struct Command {
   std::vector<std::string> args;
 };
 
-std::unordered_set<std::string> builtin{"echo", "exit", "type"};
+std::unordered_set<std::string> builtin{"echo", "exit", "type", "pwd"};
 
 Command parseInput(std::string &input);
 std::string trimString(std::string &input);
