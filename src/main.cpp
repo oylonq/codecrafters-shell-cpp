@@ -99,14 +99,17 @@ int main() {
           }
           sub_args[args.size() + 1] = nullptr;
 
+          // pass any arguments from the command line to the program
           execv(cmd_path.c_str(), sub_args);
+
+          std::perror("execv failed");
+          exit(1);
         }
+      } else {
+        // Print: Display the output or error message
+
+        std::cout << cmd << ": command not found" << '\n';
       }
-
-      // pass any arguments from the command line to the program
-
-      // Print: Display the output or error message
-      std::cout << cmd << ": command not found" << '\n';
     }
 
   } // Loop: Return to step 1 and wait for the next command
