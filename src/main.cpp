@@ -198,7 +198,7 @@ std::vector<std::string> splitStr(std::string s, char symbol) {
 
   int start = 0;
   for (int end = 0; end < s.size(); ++end) {
-    if (s[end] == symbol) {
+    if (s[end] == symbol || (end == s.size() - 1)) {
       res.push_back(s.substr(start, end - start));
       start = end + 1;
     }
