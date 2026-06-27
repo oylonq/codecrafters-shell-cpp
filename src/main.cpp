@@ -200,9 +200,8 @@ std::vector<std::string> splitStr(std::string &s, char symbol) {
       start = end + 1;
     }
   }
-  if (start != n) {
-    res.push_back(s.substr(start, n - start));
-  }
+
+  res.push_back(s.substr(start));
 
   return res;
 }
