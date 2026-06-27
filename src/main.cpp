@@ -11,7 +11,7 @@
 namespace Shell {
 std::vector<std::string> argv;
 };
-enum class CMDS { EXIT, ECHO, TYPE, PWD, CD };
+enum class CMDS { EXIT, ECHO, TYPE, PWD, CD, OTHER };
 std::unordered_map<std::string, CMDS> builtin{{"exit", CMDS::EXIT},
                                               {"echo", CMDS::ECHO},
                                               {"type", CMDS::TYPE},
@@ -45,7 +45,9 @@ int main() {
     std::string trimed_input = trimStr(input);
     Shell::argv = splitStr(trimed_input, ' ');
 
-    switch (builtin[Shell::argv[0]]) {
+    switch (builtin.find(Shell::argv[0]) != builtin.end()
+                ? builtin[Shell::argv[0]]
+                : CMDS::OTHER) {
     case CMDS::EXIT:
       exitBuiltin();
       break;
