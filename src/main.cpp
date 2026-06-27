@@ -35,7 +35,6 @@ int main() {
 
   while (true) {
     // Read: Display a prompt and wait for user input
-    pid_t pid;
     std::cout << "$ ";
 
     std::string input;
@@ -48,7 +47,6 @@ int main() {
     CMDS condition = builtin.find(Shell::argv[0]) != builtin.end()
                          ? builtin[Shell::argv[0]]
                          : CMDS::OTHER;
-
     switch (condition) {
     case CMDS::EXIT:
       exitBuiltin();
@@ -71,6 +69,7 @@ int main() {
       break;
 
     default: {
+      pid_t pid;
       // Determine if the give command is an executable
       std::string cmd_path;
       if (getPath(Shell::argv[0], cmd_path)) {
@@ -98,11 +97,11 @@ int main() {
 
         std::cout << Shell::argv[0] << ": command not found" << '\n';
       }
-    } break;
-    }
 
-    int status;
-    waitpid(pid, &status, 0);
+      int status;
+      waitpid(pid, &status, 0);
+    } break;
+    } // Switch End
 
   } // Loop: Return to step 1 and wait for the next command
 
