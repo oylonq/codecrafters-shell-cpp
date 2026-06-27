@@ -14,7 +14,7 @@ struct Command {
   std::vector<std::string> args;
 };
 
-std::unordered_set<std::string> builtin{"echo", "exit", "type", "pwd"};
+std::unordered_set<std::string> builtin{"echo", "exit", "type", "pwd", "cd"};
 
 Command parseInput(std::string &input);
 std::string trimString(std::string &input);
@@ -88,6 +88,14 @@ int main() {
     } else if (cmd == "pwd") {
       std::filesystem::path cwd = std::filesystem::current_path();
       std::cout << std::string(cwd) << '\n';
+
+    } else if (cmd == "cd") {
+      std::filesystem::path target_dir(args[0]);
+      if (std::filesystem::is_directory(target_dir)) {
+        std::filesystem::current_path(target_dir);
+      } else {
+        std::cout << "cd: " << args[0] << ": No such file or directory" << '\n';
+      }
 
     } else {
       // Determine if the give command is an executable
