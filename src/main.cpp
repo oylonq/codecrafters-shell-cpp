@@ -6,18 +6,15 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <unordered_set>
-
 #include <vector>
 
-struct Command {
-  std::string cmd;
-  std::vector<std::string> args;
+namespace Shell {
+std::vector<std::string> argv;
 };
 
 std::unordered_set<std::string> builtin{"echo", "exit", "type", "pwd", "cd"};
 
-Command parseInput(std::string &input);
-std::string trimString(std::string &input);
+std::string trimStr(std::string &input);
 std::vector<std::string> splitStr(std::string &s, char symbol);
 bool getPath(std::string &command, std::string &cmd_path);
 
@@ -35,72 +32,75 @@ int main() {
     std::getline(std::cin, input);
 
     // Eval: Parse and execute the command
-    auto [cmd, args] = parseInput(input);
+    std::string trimed_input = trimStr(input);
+    Shell::argv = splitStr(trimed_input, ' ');
 
-    if (cmd == "exit") {
+    if (Shell::argv[0] == "exit") {
 
       return 0;
 
-    } else if (cmd == "echo") {
-
-      if (!args.empty()) {
-        for (int i = 0; i < args.size() - 1; ++i) {
-          std::cout << args[i] << ' ';
-        }
-        std::cout << args.back() << '\n';
-      } else {
-        std::cout << '\n';
+    } else if (Shell::argv[0] == "echo") {
+      for (int i = 1; i < Shell::argv.size(); ++i) {
+        std::cout << Shell::argv[i] << ' ';
       }
+      std::cout << '\n';
 
-    } else if (cmd == "type") {
+    } else if (Shell::argv[0] == "type") {
 
-      if (!args.empty()) {
-        if (builtin.find(args[0]) != builtin.end()) {
-          std::cout << args[0] << " is a shell builtin" << '\n';
+      if (Shell::argv.size() > 0) {
+        if (builtin.find(Shell::argv[1]) != builtin.end()) {
+          std::cout << Shell::argv[1] << " is a shell builtin" << '\n';
 
         } else { // cmd is not a builtin
           // Get PATH
           std::string PATH{getenv("PATH")};
           std::vector<std::string> PATHs = splitStr(PATH, ':');
+          std::string full_path;
           bool is_exec = false;
 
-          for (std::string path : PATHs) {
-            if (std::filesystem::exists(path + "/" + args[0])) {
+          for (std::string &path : PATHs) {
+            full_path = path + "/" + Shell::argv[1];
+            if (std::filesystem::exists(full_path)) {
               std::filesystem::perms p =
-                  std::filesystem::status(path + "/" + args[0]).permissions();
-              is_exec = std::filesystem::perms::none !=
+                  std::filesystem::status(full_path).permissions();
 
+              is_exec = std::filesystem::perms::none !=
                         ((std::filesystem::perms::owner_exec |
                           std::filesystem ::perms ::group_exec |
                           std::filesystem::perms::others_exec) &
                          p);
+
               if (is_exec) {
-                std::cout << args[0] << " is " + path + "/" + args[0] << '\n';
                 break;
               }
             }
           }
-          if (!is_exec)
-            std::cout << args[0] << ": not found" << '\n';
+
+          if (is_exec) {
+            std::cout << Shell::argv[1] << " is " << full_path << '\n';
+          } else {
+            std::cout << Shell::argv[1] << ": not found" << '\n';
+          }
         }
       }
 
-    } else if (cmd == "pwd") {
+    } else if (Shell::argv[0] == "pwd") {
       std::filesystem::path cwd = std::filesystem::current_path();
       std::cout << std::string(cwd) << '\n';
 
-    } else if (cmd == "cd") {
-      std::filesystem::path target_dir(args[0]);
+    } else if (Shell::argv[0] == "cd") {
+      std::filesystem::path target_dir(Shell::argv[1]);
       if (std::filesystem::is_directory(target_dir)) {
         std::filesystem::current_path(target_dir);
       } else {
-        std::cout << "cd: " << args[0] << ": No such file or directory" << '\n';
+        std::cout << "cd: " << Shell::argv[1] << ": No such file or directory"
+                  << '\n';
       }
 
     } else {
       // Determine if the give command is an executable
       std::string cmd_path;
-      if (getPath(cmd, cmd_path)) {
+      if (getPath(Shell::argv[0], cmd_path)) {
         // if it is, execute the program
         pid = fork();
         if (pid == 1) {
@@ -108,15 +108,14 @@ int main() {
           return 1;
         } else if (pid == 0) {
           // Inside child process
-          char *sub_args[args.size() + 2];
-          sub_args[0] = const_cast<char *>(cmd.c_str());
-          for (int i = 0; i < args.size(); ++i) {
-            sub_args[i + 1] = const_cast<char *>(args[i].c_str());
+          char *sub_argv[Shell::argv.size() + 1];
+          for (int i = 0; i < Shell::argv.size(); ++i) {
+            sub_argv[i] = const_cast<char *>(Shell::argv[i].c_str());
           }
-          sub_args[args.size() + 1] = nullptr;
+          sub_argv[Shell::argv.size() + 1] = nullptr;
 
           // pass any arguments from the command line to the program
-          execv(cmd_path.c_str(), sub_args);
+          execv(cmd_path.c_str(), sub_argv);
 
           std::perror("execv failed");
           exit(1);
@@ -124,7 +123,7 @@ int main() {
       } else {
         // Print: Display the output or error message
 
-        std::cout << cmd << ": command not found" << '\n';
+        std::cout << Shell::argv[0] << ": command not found" << '\n';
       }
     }
 
@@ -162,20 +161,7 @@ bool getPath(std::string &command, std::string &cmd_path) {
   return false;
 }
 
-Command parseInput(std::string &input) {
-  Command res;
-
-  // Trim input
-  std::string trimed_input = trimString(input);
-  std::vector<std::string> vec = splitStr(trimed_input, ' ');
-  res.cmd = vec[0];
-  for (int i = 1; i < vec.size(); ++i) {
-    res.args.push_back(vec[i]);
-  }
-  return res;
-}
-
-std::string trimString(std::string &input) {
+std::string trimStr(std::string &input) {
   int left = 0;
   int right = input.size() - 1;
 
