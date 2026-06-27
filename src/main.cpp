@@ -15,6 +15,7 @@ enum class CMDS { EXIT, ECHO, TYPE, PWD, CD };
 std::unordered_map<std::string, CMDS> builtin{{"exit", CMDS::EXIT},
                                               {"echo", CMDS::ECHO},
                                               {"type", CMDS::TYPE},
+                                              {"pwd", CMDS::PWD},
                                               {"cd", CMDS::CD}};
 
 std::string trimStr(std::string &input);
