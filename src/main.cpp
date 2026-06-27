@@ -112,7 +112,7 @@ int main() {
           for (int i = 0; i < Shell::argv.size(); ++i) {
             sub_argv[i] = const_cast<char *>(Shell::argv[i].c_str());
           }
-          sub_argv[Shell::argv.size() + 1] = nullptr;
+          sub_argv[Shell::argv.size()] = nullptr;
 
           // pass any arguments from the command line to the program
           execv(cmd_path.c_str(), sub_argv);
