@@ -220,7 +220,8 @@ void pwdBuiltin() {
 }
 
 void cdBuiltin() {
-  std::filesystem::path target_dir(Shell::argv[1]);
+  std::filesystem::path target_dir(Shell::argv[1] == "~" ? getenv("HOME")
+                                                         : Shell::argv[1]);
   if (std::filesystem::is_directory(target_dir)) {
     std::filesystem::current_path(target_dir);
   } else {
