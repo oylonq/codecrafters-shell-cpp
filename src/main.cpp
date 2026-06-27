@@ -45,9 +45,11 @@ int main() {
     std::string trimed_input = trimStr(input);
     Shell::argv = splitStr(trimed_input, ' ');
 
-    switch (builtin.find(Shell::argv[0]) != builtin.end()
-                ? builtin[Shell::argv[0]]
-                : CMDS::OTHER) {
+    CMDS condition = builtin.find(Shell::argv[0]) != builtin.end()
+                         ? builtin[Shell::argv[0]]
+                         : CMDS::OTHER;
+
+    switch (condition) {
     case CMDS::EXIT:
       exitBuiltin();
       break;
