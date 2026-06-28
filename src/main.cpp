@@ -151,17 +151,64 @@ std::string trimStr(std::string &input) {
 
 std::vector<std::string> splitStr(std::string &s, char symbol) {
   std::vector<std::string> res;
+  std::string current_string = "";
+
+  bool in_quote = false;
+  bool in_token = false;
+
+  for (const char &c : s) {
+    if (in_quote) { // Inside quotes
+      if (c == '\'') {
+        in_quote = false;
+      } else {
+        current_string += c;
+      }
+    } else { // Outside quotes
+      if (c == '\'') {
+        in_quote = true;
+        in_token = true;
+      } else if (c == symbol) {
+        if (in_token) {
+          res.push_back(current_string);
+          current_string.clear();
+          in_token = false;
+        }
+      } else {
+        current_string += c;
+        in_token = true;
+      }
+    }
+  }
+
+  if (in_token) {
+    res.push_back(current_string);
+  }
+
+  return res;
+}
+std::vector<std::string> splitStr1(std::string &s, char symbol) {
+  std::vector<std::string> res;
   int n = s.size();
 
   int start = 0;
   for (int end = 0; end < n; ++end) {
     if (s[end] == symbol) {
+      if (end - start != 0) {
+        res.push_back(s.substr(start, end - start));
+      }
+      start = end + 1;
+    } else if (s[end] == '\'') { // Handing single quotes
+      start = end + 1;
+      end = s.find('\'', start);
       res.push_back(s.substr(start, end - start));
       start = end + 1;
     }
   }
 
   res.push_back(s.substr(start));
+  for (const std::string &str : res) {
+    std::cout << str.size() << '\n';
+  }
 
   return res;
 }
