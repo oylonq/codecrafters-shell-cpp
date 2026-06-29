@@ -19,7 +19,7 @@ std::unordered_map<std::string, CMDS> builtin{{"exit", CMDS::EXIT},
                                               {"cd", CMDS::CD}};
 
 std::string trimStr(std::string &input);
-std::vector<std::string> splitStr(std::string &s, char symbol);
+std::vector<std::string> splitStr(std::string &str, char delimiter);
 bool getPath(std::string &command, std::string &cmd_path);
 
 void exitBuiltin();
@@ -183,6 +183,8 @@ std::vector<std::string> splitStr(std::string &str, char delimiter) {
         current_state = State::BLANK;
       } else if (c == '\'') {
         current_state = State::SQUOTE;
+      } else if (c == '\"') {
+        current_state = State::DQUOTE;
       } else {
         buffer += c;
       }
