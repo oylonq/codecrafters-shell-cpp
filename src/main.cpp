@@ -213,7 +213,7 @@ std::vector<std::string> splitStr(std::string &str, char delimiter) {
       break;
     case State::BACKSLASH:
       buffer += c;
-      current_state = State::BLANK;
+      current_state = State::BASIC;
       break;
 
     default:
