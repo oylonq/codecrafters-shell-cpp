@@ -205,6 +205,8 @@ std::vector<std::string> splitStr(std::string &str, char delimiter) {
     case State::DQUOTE:
       if (c == '\"') {
         current_state = State::BLANK;
+      } else if (c == '\\') {
+        current_state = State::BACKSLASH;
       } else {
         buffer += c;
       }
