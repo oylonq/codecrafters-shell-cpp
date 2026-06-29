@@ -149,65 +149,68 @@ std::string trimStr(std::string &input) {
   return input.substr(left, right - left + 1);
 }
 
-std::vector<std::string> splitStr(std::string &s, char symbol) {
+// Finite state machine
+enum class State { BLANK, BASIC, SQUOTE, DQUOTE };
+
+std::vector<std::string> splitStr(std::string &str, char delimiter) {
   std::vector<std::string> res;
-  std::string current_string = "";
+  std::string buffer;
+  State current_state = State::BLANK;
 
-  bool in_quote = false;
-  bool in_token = false;
-
-  for (const char &c : s) {
-    if (in_quote) { // Inside quotes
-      if (c == '\'') {
-        in_quote = false;
-      } else {
-        current_string += c;
-      }
-    } else { // Outside quotes
-      if (c == '\'') {
-        in_quote = true;
-        in_token = true;
-      } else if (c == symbol) {
-        if (in_token) {
-          res.push_back(current_string);
-          current_string.clear();
-          in_token = false;
+  for (const char &c : str) {
+    switch (current_state) {
+    case State::BLANK:
+      if (c == delimiter) {
+        if (!buffer.empty()) {
+          res.push_back(buffer);
+          buffer.clear();
         }
+        current_state = State::BLANK;
+      } else if (c == '\'') {
+        current_state = State::SQUOTE;
+      } else if (c == '\"') {
+        current_state = State::DQUOTE;
       } else {
-        current_string += c;
-        in_token = true;
+        current_state = State::BASIC;
+        buffer += c;
       }
+      break;
+
+    case State::BASIC:
+      if (c == delimiter) {
+        res.push_back(buffer);
+        buffer.clear();
+        current_state = State::BLANK;
+      } else if (c == '\'') {
+        current_state = State::SQUOTE;
+      } else {
+        buffer += c;
+      }
+      break;
+
+    case State::SQUOTE:
+      if (c == '\'') {
+        current_state = State::BLANK;
+      } else {
+        buffer += c;
+      }
+      break;
+
+    case State::DQUOTE:
+      if (c == '\"') {
+        current_state = State::BLANK;
+      } else {
+        buffer += c;
+      }
+      break;
+
+    default:
+      break;
     }
   }
 
-  if (in_token) {
-    res.push_back(current_string);
-  }
-
-  return res;
-}
-std::vector<std::string> splitStr1(std::string &s, char symbol) {
-  std::vector<std::string> res;
-  int n = s.size();
-
-  int start = 0;
-  for (int end = 0; end < n; ++end) {
-    if (s[end] == symbol) {
-      if (end - start != 0) {
-        res.push_back(s.substr(start, end - start));
-      }
-      start = end + 1;
-    } else if (s[end] == '\'') { // Handing single quotes
-      start = end + 1;
-      end = s.find('\'', start);
-      res.push_back(s.substr(start, end - start));
-      start = end + 1;
-    }
-  }
-
-  res.push_back(s.substr(start));
-  for (const std::string &str : res) {
-    std::cout << str.size() << '\n';
+  if (!buffer.empty()) {
+    res.push_back(buffer);
   }
 
   return res;
