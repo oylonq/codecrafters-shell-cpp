@@ -1,6 +1,6 @@
 #include <cstdlib>
+#include <fcntl.h>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 #include <string>
 #include <sys/types.h>
@@ -83,9 +83,19 @@ int main() {
           // Inside child process
           char *sub_argv[Shell::argv.size() + 1];
           for (int i = 0; i < Shell::argv.size(); ++i) {
-            sub_argv[i] = const_cast<char *>(Shell::argv[i].c_str());
+            if (Shell::argv[i] == ">" || Shell::argv[i] == "1>") {
+              sub_argv[i] = nullptr;
+              int oldfd = open(Shell::argv[i + 1].c_str(),
+                               O_WRONLY | O_CREAT | O_TRUNC, 0644);
+              dup2(oldfd, 1);
+              break;
+            } else {
+              sub_argv[i] = const_cast<char *>(Shell::argv[i].c_str());
+            }
           }
           sub_argv[Shell::argv.size()] = nullptr;
+
+          // Redirect stdout
 
           // pass any arguments from the command line to the program
           execv(cmd_path.c_str(), sub_argv);
@@ -241,12 +251,17 @@ void echoBuiltin() {
   std::string text;
   for (int i = 1; i < Shell::argv.size(); ++i) {
     if (Shell::argv[i] == ">" || Shell::argv[i] == "1>") {
-      std::ofstream outputFile(Shell::argv[i + 1]);
-      if (outputFile.is_open()) {
-        outputFile << text;
-      }
+      int stdout_backup = dup(1);
+      int oldfd =
+          open(Shell::argv[i + 1].c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+      dup2(oldfd, 1);
+      std::cout << text << '\n';
+      dup2(stdout_backup, 1);
+      close(stdout_backup);
+      return;
     } else {
-      text += Shell::argv[i] + ' ';
+      text += Shell::argv[i];
+      text += " ";
     }
   }
   std::cout << text << '\n';
