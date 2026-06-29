@@ -150,7 +150,7 @@ std::string trimStr(std::string &input) {
 }
 
 // Finite state machine
-enum class State { BLANK, BASIC, SQUOTE, DQUOTE };
+enum class State { BLANK, BASIC, SQUOTE, DQUOTE, BACKSLASH };
 
 std::vector<std::string> splitStr(std::string &str, char delimiter) {
   std::vector<std::string> res;
@@ -170,6 +170,8 @@ std::vector<std::string> splitStr(std::string &str, char delimiter) {
         current_state = State::SQUOTE;
       } else if (c == '\"') {
         current_state = State::DQUOTE;
+      } else if (c == '\\') {
+        current_state = State::BACKSLASH;
       } else {
         current_state = State::BASIC;
         buffer += c;
@@ -185,6 +187,8 @@ std::vector<std::string> splitStr(std::string &str, char delimiter) {
         current_state = State::SQUOTE;
       } else if (c == '\"') {
         current_state = State::DQUOTE;
+      } else if (c == '\\') {
+        current_state = State::BACKSLASH;
       } else {
         buffer += c;
       }
@@ -204,6 +208,10 @@ std::vector<std::string> splitStr(std::string &str, char delimiter) {
       } else {
         buffer += c;
       }
+      break;
+    case State::BACKSLASH:
+      buffer += c;
+      current_state = State::BLANK;
       break;
 
     default:
