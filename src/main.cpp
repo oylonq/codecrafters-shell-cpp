@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <sys/types.h>
@@ -94,7 +95,6 @@ int main() {
         }
       } else {
         // Print: Display the output or error message
-
         std::cout << Shell::argv[0] << ": command not found" << '\n';
       }
 
@@ -237,10 +237,19 @@ std::vector<std::string> splitStr(std::string &str, char delimiter) {
 void exitBuiltin() { exit(0); }
 
 void echoBuiltin() {
+  // Redirect stdout
+  std::string text;
   for (int i = 1; i < Shell::argv.size(); ++i) {
-    std::cout << Shell::argv[i] << ' ';
+    if (Shell::argv[i] == ">" || Shell::argv[i] == "1>") {
+      std::ofstream outputFile(Shell::argv[i + 1]);
+      if (outputFile.is_open()) {
+        outputFile << text;
+      }
+    } else {
+      text += Shell::argv[i] + ' ';
+    }
   }
-  std::cout << '\n';
+  std::cout << text << '\n';
 }
 
 void typeBuiltin() {
