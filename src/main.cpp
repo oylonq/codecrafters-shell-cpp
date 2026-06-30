@@ -95,6 +95,12 @@ int main() {
                                O_WRONLY | O_CREAT | O_TRUNC, 0644);
               dup2(oldfd, STDERR_FILENO);
               break;
+            } else if (Shell::argv[i] == ">>") {
+              sub_argv[i] = nullptr;
+              int oldfd =
+                  open(Shell::argv[i + 1].c_str(), O_APPEND | O_CREAT, 0644);
+              dup2(oldfd, STDOUT_FILENO);
+              break;
             } else {
               sub_argv[i] = const_cast<char *>(Shell::argv[i].c_str());
             }
@@ -261,7 +267,7 @@ void echoBuiltin() {
       dup2(oldfd, 1);
       std::cout << text << '\n';
       dup2(stdout_backup, 1);
-      close(stdout_backup);
+      close(oldfd);
       return;
     } else if (Shell::argv[i] == "2>") {
       int stdout_backup = dup(STDERR_FILENO);
@@ -270,8 +276,17 @@ void echoBuiltin() {
       dup2(oldfd, STDERR_FILENO);
       std::cout << text << '\n';
       dup2(stdout_backup, STDERR_FILENO);
-      close(stdout_backup);
+      close(oldfd);
       return;
+    } else if (Shell::argv[i] == ">>") {
+      int stdout_backup = dup(STDOUT_FILENO);
+      int oldfd = open(Shell::argv[i + 1].c_str(), O_APPEND | O_CREAT, 0644);
+      dup2(oldfd, STDOUT_FILENO);
+      std::cout << text << '\n';
+      dup2(stdout_backup, STDOUT_FILENO);
+      close(oldfd);
+      return;
+
     } else {
       text += Shell::argv[i];
       text += " ";
