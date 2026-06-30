@@ -95,7 +95,7 @@ int main() {
                                O_WRONLY | O_CREAT | O_TRUNC, 0644);
               dup2(oldfd, STDERR_FILENO);
               break;
-            } else if (Shell::argv[i] == ">>") {
+            } else if (Shell::argv[i] == ">>" || Shell::argv[i] == "1>>") {
               sub_argv[i] = nullptr;
               int oldfd =
                   open(Shell::argv[i + 1].c_str(), O_APPEND | O_CREAT, 0644);
@@ -278,7 +278,7 @@ void echoBuiltin() {
       dup2(stdout_backup, STDERR_FILENO);
       close(oldfd);
       return;
-    } else if (Shell::argv[i] == ">>") {
+    } else if (Shell::argv[i] == ">>" || Shell::argv[i] == "1>>") {
       int stdout_backup = dup(STDOUT_FILENO);
       int oldfd = open(Shell::argv[i + 1].c_str(), O_APPEND | O_CREAT, 0644);
       dup2(oldfd, STDOUT_FILENO);
@@ -286,7 +286,6 @@ void echoBuiltin() {
       dup2(stdout_backup, STDOUT_FILENO);
       close(oldfd);
       return;
-
     } else {
       text += Shell::argv[i];
       text += " ";
