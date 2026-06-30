@@ -97,8 +97,8 @@ int main() {
               break;
             } else if (Shell::argv[i] == ">>" || Shell::argv[i] == "1>>") {
               sub_argv[i] = nullptr;
-              int oldfd =
-                  open(Shell::argv[i + 1].c_str(), O_APPEND | O_CREAT, 0644);
+              int oldfd = open(Shell::argv[i + 1].c_str(),
+                               O_WRONLY | O_APPEND | O_CREAT, 0644);
               dup2(oldfd, STDOUT_FILENO);
               break;
             } else {
@@ -280,7 +280,8 @@ void echoBuiltin() {
       return;
     } else if (Shell::argv[i] == ">>" || Shell::argv[i] == "1>>") {
       int stdout_backup = dup(STDOUT_FILENO);
-      int oldfd = open(Shell::argv[i + 1].c_str(), O_APPEND | O_CREAT, 0644);
+      int oldfd =
+          open(Shell::argv[i + 1].c_str(), O_WRONLY | O_APPEND | O_CREAT, 0644);
       dup2(oldfd, STDOUT_FILENO);
       std::cout << text << '\n';
       dup2(stdout_backup, STDOUT_FILENO);
