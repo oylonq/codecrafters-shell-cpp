@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <filesystem>
 #include <iostream>
+#include <set>
 #include <string>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -92,6 +93,7 @@ int main() {
         } else if (c == '\x09') {
           write(STDOUT_FILENO, "\x07", 1);
           std::vector<std::string> autocompletion{"echo", "exit"};
+          std::set<std::string> derepeat{"echo", "exit"};
           std::string PATH{getenv("PATH")};
           std::vector<std::string> PATHS = splitStr(PATH, ':');
           for (const std::string path : PATHS) {
@@ -107,7 +109,10 @@ int main() {
                       std::filesystem::perms::others_exec) &
                      p)) {
                   std::string filename = filepath.substr(path.size() + 1);
-                  autocompletion.push_back(filename);
+                  if (!derepeat.contains(filename)) {
+                    autocompletion.push_back(filename);
+                    derepeat.insert(filename);
+                  }
                 }
               }
             }
