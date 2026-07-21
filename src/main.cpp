@@ -139,6 +139,7 @@ int main() {
             }
             input += ' ';
             write(STDOUT_FILENO, " ", 1);
+            matching.clear();
           }
 
           if (matching.empty())
