@@ -129,6 +129,7 @@ int main() {
             }
             write(STDOUT_FILENO, "\r\n$ ", 4);
             write(STDOUT_FILENO, input.c_str(), input.size());
+            matching.clear();
           }
 
           if (matching.size() == 1) {
