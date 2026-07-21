@@ -1,10 +1,15 @@
+#include <cctype>
+#include <cerrno>
+#include <cstdio>
 #include <cstdlib>
+#include <errno.h>
 #include <fcntl.h>
 #include <filesystem>
 #include <iostream>
 #include <string>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <termios.h>
 #include <unistd.h>
 #include <unordered_map>
 #include <vector>
@@ -12,16 +17,43 @@
 namespace Shell {
 std::vector<std::string> argv;
 };
-enum class CMDS { EXIT, ECHO, TYPE, PWD, CD, OTHER };
-std::unordered_map<std::string, CMDS> builtin{{"exit", CMDS::EXIT},
-                                              {"echo", CMDS::ECHO},
-                                              {"type", CMDS::TYPE},
-                                              {"pwd", CMDS::PWD},
-                                              {"cd", CMDS::CD}};
+enum class CMDS { CmdEXIT, CmdECHO, CmdTYPE, CmdPWD, CmdCD, CmdOTHER };
+std::unordered_map<std::string, CMDS> builtin{{"exit", CMDS::CmdEXIT},
+                                              {"echo", CMDS::CmdECHO},
+                                              {"type", CMDS::CmdTYPE},
+                                              {"pwd", CMDS::CmdPWD},
+                                              {"cd", CMDS::CmdCD}};
 
 std::string trimStr(std::string &input);
 std::vector<std::string> splitStr(std::string &str, char delimiter);
 bool getPath(std::string &command, std::string &cmd_path);
+
+struct termios orig_termios;
+void die(const char *s) {
+  perror(s);
+  exit(1);
+}
+
+void disableRawMode() {
+  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios) == -1)
+    die("tcsetattr");
+}
+void enableRawMode() {
+  if (tcgetattr(STDIN_FILENO, &orig_termios) == -1)
+    die("tcgetattr");
+  atexit(disableRawMode);
+
+  struct termios raw = orig_termios;
+  raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+  raw.c_oflag &= ~(OPOST);
+  raw.c_cflag |= (CS8);
+  raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
+  raw.c_cc[VMIN] = 0;
+  raw.c_cc[VTIME] = 1;
+
+  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
+    die("tcsetattr");
+}
 
 void exitBuiltin();
 void echoBuiltin();
@@ -37,9 +69,56 @@ int main() {
   while (true) {
     // Read: Display a prompt and wait for user input
     std::cout << "$ ";
+    enableRawMode();
 
     std::string input;
-    std::getline(std::cin, input);
+
+    while (1) {
+      char c = '\0';
+      if (read(STDIN_FILENO, &c, 1) == -1 && errno != EAGAIN)
+        die("read");
+
+      if (iscntrl(c)) {
+        if (c == '\x08' || c == '\x7f') {
+          if (!input.empty()) {
+            input.pop_back();
+            write(STDOUT_FILENO, "\b \b", 3);
+          }
+        } else if (c == '\r' || c == '\n') {
+          write(STDOUT_FILENO, "\r\n", 2);
+          break;
+        } else if (c == '\x09') {
+          std::vector<std::string> autocompletion{"echo", "exit"};
+          for (std::string str : autocompletion) {
+            int pos = str.find_last_of(input.back());
+            if (pos != std::string::npos) {
+              bool ispreifx = true;
+              if (input.size() < pos + 1) {
+                ispreifx = false;
+              } else {
+                for (int i = pos, j = input.size() - 1; i >= 0; --i, --j) {
+                  if (str[i] != input[j]) {
+                    ispreifx = false;
+                  }
+                }
+              }
+              if (ispreifx) {
+                for (int i = pos + 1; i < str.size(); i++) {
+                  input += str[i];
+                  write(STDOUT_FILENO, &str[i], 1);
+                }
+                input += ' ';
+                write(STDOUT_FILENO, " ", 1);
+              }
+            }
+          }
+        }
+      } else {
+        input += c;
+        write(STDOUT_FILENO, &c, 1);
+      }
+    }
+    disableRawMode();
 
     // Eval: Parse and execute the command
     std::string trimed_input = trimStr(input);
@@ -47,25 +126,25 @@ int main() {
 
     CMDS condition = builtin.find(Shell::argv[0]) != builtin.end()
                          ? builtin[Shell::argv[0]]
-                         : CMDS::OTHER;
+                         : CMDS::CmdOTHER;
     switch (condition) {
-    case CMDS::EXIT:
+    case CMDS::CmdEXIT:
       exitBuiltin();
       break;
 
-    case CMDS::ECHO:
+    case CMDS::CmdECHO:
       echoBuiltin();
       break;
 
-    case CMDS::TYPE:
+    case CMDS::CmdTYPE:
       typeBuiltin();
       break;
 
-    case CMDS::PWD:
+    case CMDS::CmdPWD:
       pwdBuiltin();
       break;
 
-    case CMDS::CD:
+    case CMDS::CmdCD:
       cdBuiltin();
       break;
 
