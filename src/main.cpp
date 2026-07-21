@@ -95,7 +95,7 @@ int main() {
             for (const auto &entry :
                  std::filesystem::directory_iterator(path)) {
               std::string filepath = entry.path().string();
-              std::string filename = filepath.substr(path.size());
+              std::string filename = filepath.substr(path.size() + 1);
               autocompletion.push_back(filename);
             }
           }
