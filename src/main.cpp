@@ -128,7 +128,7 @@ int main() {
               }
             }
           } else {
-            for (const std::string match : matching) {
+            for (std::string match : matching) {
               write(STDOUT_FILENO, match.c_str(), match.size());
               write(STDOUT_FILENO, "  ", 2);
             }
