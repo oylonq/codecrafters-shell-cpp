@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cctype>
 #include <cerrno>
 #include <cstdio>
@@ -126,6 +127,7 @@ int main() {
                 // write(STDOUT_FILENO, " ", 1);
               }
             }
+            sort(matching.begin(), matching.end());
           } else {
             write(STDOUT_FILENO, "\r\n", 2);
             for (std::string match : matching) {
@@ -133,6 +135,7 @@ int main() {
               write(STDOUT_FILENO, "  ", 2);
             }
             write(STDOUT_FILENO, "\r\n$", 3);
+            write(STDOUT_FILENO, input.c_str(), input.size());
           }
 
           if (matching.empty())
