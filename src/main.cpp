@@ -90,6 +90,7 @@ int main() {
           write(STDOUT_FILENO, "\r\n", 2);
           break;
         } else if (c == '\x09') {
+          write(STDOUT_FILENO, "\x07", 1);
           std::vector<std::string> autocompletion{"echo", "exit"};
           std::string PATH{getenv("PATH")};
           std::vector<std::string> PATHS = splitStr(PATH, ':');
@@ -127,7 +128,6 @@ int main() {
               }
             }
           } else {
-            write(STDOUT_FILENO, "\x07", 1);
             for (const std::string match : matching) {
               write(STDOUT_FILENO, match.c_str(), match.size());
               write(STDOUT_FILENO, "  ", 2);
