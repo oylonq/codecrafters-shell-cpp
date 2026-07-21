@@ -110,8 +110,10 @@ int main() {
                 input += ' ';
                 write(STDOUT_FILENO, " ", 1);
               } else {
-                write(STDOUT_FILENO, "\x09", 1);
+                write(STDOUT_FILENO, "\x07", 1);
               }
+            } else {
+              write(STDOUT_FILENO, "\x07", 1);
             }
           }
         }
