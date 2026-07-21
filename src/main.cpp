@@ -96,8 +96,16 @@ int main() {
                  std::filesystem::directory_iterator(path)) {
               if (!entry.is_directory()) {
                 std::string filepath = entry.path().string();
-                std::string filename = filepath.substr(path.size());
-                autocompletion.push_back(filename);
+                std::filesystem::perms p =
+                    std::filesystem::status(filepath).permissions();
+                if (std::filesystem::perms::none !=
+                    ((std::filesystem::perms::owner_exec |
+                      std::filesystem ::perms ::group_exec |
+                      std::filesystem::perms::others_exec) &
+                     p)) {
+                  std::string filename = filepath.substr(path.size() + 1);
+                  autocompletion.push_back(filename);
+                }
               }
             }
           }
