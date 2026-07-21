@@ -129,7 +129,9 @@ int main() {
             }
             write(STDOUT_FILENO, "\r\n$ ", 4);
             write(STDOUT_FILENO, input.c_str(), input.size());
-          } else if (matching.size() == 1) {
+          }
+
+          if (matching.size() == 1) {
             int pos = trimed.size();
             for (int i = pos; i < matching[0].size(); i++) {
               input += matching[0][i];
