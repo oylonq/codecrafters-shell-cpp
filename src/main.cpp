@@ -134,7 +134,7 @@ int main() {
               write(STDOUT_FILENO, match.c_str(), match.size());
               write(STDOUT_FILENO, "  ", 2);
             }
-            write(STDOUT_FILENO, "\r\n$", 3);
+            write(STDOUT_FILENO, "\r\n$ ", 4);
             write(STDOUT_FILENO, input.c_str(), input.size());
           }
 
