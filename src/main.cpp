@@ -110,33 +110,23 @@ int main() {
             }
           }
 
+          std::string trimed = trimStr(input);
+          bool ispartial = false;
           for (std::string str : autocompletion) {
-            int pos = str.find_last_of(input.back());
-            if (pos != std::string::npos) {
-              bool ispreifx = true;
-              if (input.size() < pos + 1) {
-                ispreifx = false;
-              } else {
-                for (int i = pos, j = input.size() - 1; i >= 0; --i, --j) {
-                  if (str[i] != input[j]) {
-                    ispreifx = false;
-                  }
-                }
+            if (str.starts_with(trimed)) {
+              ispartial = true;
+              int pos = trimed.size();
+              for (int i = pos; i < str.size(); i++) {
+                input += str[i];
+                write(STDOUT_FILENO, &str[i], 1);
               }
-              if (ispreifx) {
-                for (int i = pos + 1; i < str.size(); i++) {
-                  input += str[i];
-                  write(STDOUT_FILENO, &str[i], 1);
-                }
-                input += ' ';
-                write(STDOUT_FILENO, " ", 1);
-              } else {
-                write(STDOUT_FILENO, "\x07", 1);
-              }
-            } else {
-              write(STDOUT_FILENO, "\x07", 1);
+              input += ' ';
+              write(STDOUT_FILENO, " ", 1);
+              break;
             }
           }
+          if (!ispartial)
+            write(STDOUT_FILENO, "\x07", 1);
         }
       } else {
         input += c;
@@ -232,7 +222,6 @@ int main() {
       waitpid(pid, &status, 0);
     } break;
     } // Switch End
-
   } // Loop: Return to step 1 and wait for the next command
 
   return 0;
