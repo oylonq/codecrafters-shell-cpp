@@ -89,6 +89,17 @@ int main() {
           break;
         } else if (c == '\x09') {
           std::vector<std::string> autocompletion{"echo", "exit"};
+          std::string PATH{getenv("PATH")};
+          std::vector<std::string> PATHS = splitStr(PATH, ':');
+          for (const std::string path : PATHS) {
+            for (const auto &entry :
+                 std::filesystem::directory_iterator(path)) {
+              std::string filepath = entry.path().string();
+              std::string filename = filepath.substr(path.size());
+              autocompletion.push_back(filename);
+            }
+          }
+
           for (std::string str : autocompletion) {
             int pos = str.find_last_of(input.back());
             if (pos != std::string::npos) {
