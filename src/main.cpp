@@ -113,22 +113,15 @@ int main() {
             }
           }
 
+          std::string trimed = trimStr(input);
           if (matching.empty()) {
-            std::string trimed = trimStr(input);
             for (std::string str : autocompletion) {
               if (str.starts_with(trimed)) {
                 matching.push_back(str);
-                // int pos = trimed.size();
-                // for (int i = pos; i < str.size(); i++) {
-                //   input += str[i];
-                //   write(STDOUT_FILENO, &str[i], 1);
-                // }
-                // input += ' ';
-                // write(STDOUT_FILENO, " ", 1);
               }
             }
             sort(matching.begin(), matching.end());
-          } else {
+          } else if (matching.size() > 1) {
             write(STDOUT_FILENO, "\r\n", 2);
             for (std::string match : matching) {
               write(STDOUT_FILENO, match.c_str(), match.size());
@@ -136,6 +129,14 @@ int main() {
             }
             write(STDOUT_FILENO, "\r\n$ ", 4);
             write(STDOUT_FILENO, input.c_str(), input.size());
+          } else if (matching.size() == 1) {
+            int pos = trimed.size();
+            for (int i = pos; i < matching[0].size(); i++) {
+              input += matching[0][i];
+              write(STDOUT_FILENO, &matching[0][i], 1);
+            }
+            input += ' ';
+            write(STDOUT_FILENO, " ", 1);
           }
 
           if (matching.empty())
