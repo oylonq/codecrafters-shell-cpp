@@ -96,7 +96,7 @@ int main() {
                  std::filesystem::directory_iterator(path)) {
               if (!entry.is_directory()) {
                 std::string filepath = entry.path().string();
-                std::string filename = filepath.substr(path.size() + 1);
+                std::string filename = filepath.substr(path.size());
                 autocompletion.push_back(filename);
               }
             }
