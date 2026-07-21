@@ -78,6 +78,8 @@ int main() {
       if (read(STDIN_FILENO, &c, 1) == -1 && errno != EAGAIN)
         die("read");
 
+      std::vector<std::string> matching;
+
       if (iscntrl(c)) {
         if (c == '\x08' || c == '\x7f') {
           if (!input.empty()) {
@@ -110,22 +112,30 @@ int main() {
             }
           }
 
-          std::string trimed = trimStr(input);
-          bool ispartial = false;
-          for (std::string str : autocompletion) {
-            if (str.starts_with(trimed)) {
-              ispartial = true;
-              int pos = trimed.size();
-              for (int i = pos; i < str.size(); i++) {
-                input += str[i];
-                write(STDOUT_FILENO, &str[i], 1);
+          if (matching.empty()) {
+            std::string trimed = trimStr(input);
+            for (std::string str : autocompletion) {
+              if (str.starts_with(trimed)) {
+                matching.push_back(str);
+                // int pos = trimed.size();
+                // for (int i = pos; i < str.size(); i++) {
+                //   input += str[i];
+                //   write(STDOUT_FILENO, &str[i], 1);
+                // }
+                // input += ' ';
+                // write(STDOUT_FILENO, " ", 1);
               }
-              input += ' ';
-              write(STDOUT_FILENO, " ", 1);
-              break;
             }
+          } else {
+            write(STDOUT_FILENO, "\x07", 1);
+            for (const std::string match : matching) {
+              write(STDOUT_FILENO, match.c_str(), match.size());
+              write(STDOUT_FILENO, "  ", 2);
+            }
+            write(STDOUT_FILENO, "\r\n$", 2);
           }
-          if (!ispartial)
+
+          if (matching.empty())
             write(STDOUT_FILENO, "\x07", 1);
         }
       } else {
